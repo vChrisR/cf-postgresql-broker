@@ -12,7 +12,7 @@
         {
             "name": "github.com/Altoros/pg-puppeteer-go",
             "branch": "master",
-            "revision": "d6e3b4a6ab0ad18479338a8b2a4fd40e43dc04f8",
+            "revision": "f509cd2d26329f599a217bca3c55f3ec816be248",
             "packages": [
                 "."
             ]
@@ -20,15 +20,15 @@
         {
             "name": "github.com/gorilla/context",
             "version": "v1.1",
-            "revision": "a85d2e53ba63bdea074dbbbb5983f0516974e87b",
+            "revision": "1ea25387ff6f684839d82767c1733ff4d4d15d0a",
             "packages": [
                 "."
             ]
         },
         {
             "name": "github.com/gorilla/mux",
-            "branch": "master",
-            "revision": "599cba5e7b6137d46ddf58fb1765f5d928e69604",
+            "version": "v1.3.0",
+            "revision": "392c28fe23e1c45ddba891b0320b3b5df220beea",
             "packages": [
                 "."
             ]

@@ -42,7 +42,7 @@ var ErrInvalidSource = errors.New("source must be an url, e.g postgres://user:pa
 
 // Creates new broker instance
 func New(source string) (*PGPuppeteer, error) {
-	if !strings.HasPrefix(source, "postgre://") {
+	if !strings.HasPrefix(source, "postgres://") {
 		return nil, ErrInvalidSource
 	}
 
