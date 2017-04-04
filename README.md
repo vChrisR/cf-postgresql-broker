@@ -51,7 +51,7 @@ Start the application and register a service broker
 $ cf start cf-postgresql-broker
 $ BROKER_URL=$(cf app cf-postgresql-broker | grep urls: | awk '{print $2}')
 $ cf create-service-broker cf-postgresql-broker $AUTH_USER $AUTH_PASSWORD http://$BROKER_URL
-$ cf enable-service-access cf-postgresql-broker
+$ cf enable-service-access postgresql
 ```
 
 Then you should see `cf-postgresql-broker` in `$ cf marketplace`
