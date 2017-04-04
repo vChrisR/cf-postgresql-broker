@@ -1,0 +1,53 @@
+{
+    "memo": "02684672f70665a1a2ed97d30f9ad2aeab0eb1e85000d88879f2e5495030e1c0",
+    "projects": [
+        {
+            "name": "code.cloudfoundry.org/lager",
+            "branch": "master",
+            "revision": "de8e9c6c6e474e5e3668aea1a9817bdb4ceeceb0",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/Altoros/pg-puppeteer-go",
+            "branch": "master",
+            "revision": "d6e3b4a6ab0ad18479338a8b2a4fd40e43dc04f8",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/gorilla/context",
+            "version": "v1.1",
+            "revision": "a85d2e53ba63bdea074dbbbb5983f0516974e87b",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/gorilla/mux",
+            "branch": "master",
+            "revision": "599cba5e7b6137d46ddf58fb1765f5d928e69604",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/lib/pq",
+            "branch": "master",
+            "revision": "2704adc878c21e1329f46f6e56a1c387d788ff94",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/pivotal-cf/brokerapi",
+            "branch": "master",
+            "revision": "8f25c50c2794f9401a0162e260801e877ea3d002",
+            "packages": [
+                "."
+            ]
+        }
+    ]
+}

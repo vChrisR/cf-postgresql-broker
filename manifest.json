@@ -1,0 +1,10 @@
+{
+    "dependencies": {
+        "code.cloudfoundry.org/lager": {
+            "branch": "master"
+        },
+        "github.com/pivotal-cf/brokerapi": {
+            "branch": "master"
+        }
+    }
+}
