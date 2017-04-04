@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/Altoros/pg-puppeteer-go"
+	"github.com/Altoros/cf-postgresql-broker/pgp"
 	"github.com/pivotal-cf/brokerapi"
 )
 
@@ -157,14 +157,12 @@ func main() {
 
 	// Boot up
 	port := os.Getenv("PORT")
-
 	if port == "" {
 		port = "8080"
 	}
 
 	logger.Info("boot-up", lager.Data{"port": port})
-
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
-		logger.Fatal("listen-and-serve", err)
+		logger.Fatal("serve", err)
 	}
 }
