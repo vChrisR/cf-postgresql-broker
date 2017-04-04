@@ -80,7 +80,6 @@ func (Handler) Update(ctx context.Context, instanceID string, _ brokerapi.Update
 // Connects it to the database and parses services JSON string
 func newHandler(source string, servicesJSON string, GUID string) (*Handler, error) {
 	conn, err := pgp.New(source)
-
 	if err != nil {
 		return nil, err
 	}

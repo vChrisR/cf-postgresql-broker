@@ -38,7 +38,7 @@ type (
 const defaultPort = "5432"
 
 // Returned when source is not an url
-var ErrInvalidSource = errors.New("source must be an url, e.g postgres://user:pass@localhost:5432/postgres")
+var ErrInvalidSource = errors.New("source must be an url, e.g postgresql://user:pass@localhost:5432/postgres")
 
 // Creates new broker instance
 func New(source string) (*PGPuppeteer, error) {
