@@ -4,21 +4,22 @@ PostgreSQL single-database-instance service broker for the Cloud Foundry.
 
 ## Installation
 
-Clone the git repository:
+Clone the git repository and compile the package:
 ```
 $ git clone https://github.com/Altoros/cf-postgresql-broker.git
 $ cd cf-postgresql-broker
+$ make build
 ```
 
-Push the code base to the Cloud Foundry:
+Push the compiled binary to the Cloud Foundry:
 ```
 $ cf push --no-start
 ```
 
 Set up the environment:
 ```
-$ AUTH_USER=admin
-$ AUTH_PASSWORD=admin
+$ BASIC_AUTH_USERNAME=admin
+$ BASIC_AUTH_PASSWORD=admin
 $ PG_SOURCE=postgresql://username:password@host:port/dbname
 $ PG_SERVICES='[{
   "id": "service-postgresql-{GUID}",
@@ -29,12 +30,12 @@ $ PG_SERVICES='[{
   "plans": [{
     "id": "plan-basic-{GUID}",
     "name": "basic",
-    "description": "Shared plan"
+    "description": "Single database plan"
   }]
 }]'
 
-$ cf set-env cf-postgresql-broker AUTH_USER "$AUTH_USER"
-$ cf set-env cf-postgresql-broker AUTH_PASSWORD "$AUTH_PASSWORD"
+$ cf set-env cf-postgresql-broker BASIC_AUTH_USERNAME "$BASIC_AUTH_USERNAME"
+$ cf set-env cf-postgresql-broker BASIC_AUTH_PASSWORD "$BASIC_AUTH_PASSWORD"
 $ cf set-env cf-postgresql-broker PG_SOURCE "$PG_SOURCE"
 $ cf set-env cf-postgresql-broker PG_SERVICES "$PG_SERVICES"
 ```
@@ -43,10 +44,10 @@ $ cf set-env cf-postgresql-broker PG_SERVICES "$PG_SERVICES"
 * `{GUID}` will be replaced with its runtime value
 
 Start the application and register a service broker:
-```
+```$AUTH_PASSWORD
 $ cf start cf-postgresql-broker
 $ BROKER_URL=$(cf app cf-postgresql-broker | grep urls: | awk '{print $2}')
-$ cf create-service-broker cf-postgresql-broker $AUTH_USER $AUTH_PASSWORD http://$BROKER_URL
+$ cf create-service-broker cf-postgresql-broker $BASIC_AUTH_USERNAME $BASIC_AUTH_PASSWORD http://$BROKER_URL
 $ cf enable-service-access postgres
 ```
 

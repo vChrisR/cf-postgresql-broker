@@ -3,6 +3,9 @@
         "code.cloudfoundry.org/lager": {
             "branch": "master"
         },
+        "github.com/lib/pq": {
+            "branch": "master"
+        },
         "github.com/pivotal-cf/brokerapi": {
             "branch": "master"
         }
