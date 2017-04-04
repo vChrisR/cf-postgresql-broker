@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"net"
 	"net/url"
 	"os"
 	"strings"
@@ -42,13 +41,18 @@ var ErrInvalidSource = errors.New("source must be an url, e.g postgresql://user:
 
 // Creates new broker instance
 func New(source string) (*PGPuppeteer, error) {
-	if !strings.HasPrefix(source, "postgresql://") {
+	u, err := url.Parse(source)
+	if err != nil {
+		return nil, err
+	}
+
+	if u.Scheme != "postgresql" {
 		return nil, ErrInvalidSource
 	}
 
-	host, port, err := parseHostAndPort(source)
-	if err != nil {
-		return nil, err
+	chunks := strings.SplitN(u.Host, ":", 2)
+	if len(chunks) < 2 {
+		chunks = append(chunks, defaultPort)
 	}
 
 	conn, err := connect(source)
@@ -58,8 +62,8 @@ func New(source string) (*PGPuppeteer, error) {
 
 	return &PGPuppeteer{
 		conn:   conn,
-		host:   host,
-		port:   port,
+		host:   chunks[0],
+		port:   chunks[1],
 		prefix: "sb_",
 	}, nil
 }
@@ -67,7 +71,7 @@ func New(source string) (*PGPuppeteer, error) {
 // Creates a DB
 func (b *PGPuppeteer) CreateDB(d string) (string, error) {
 	dbname := b.dbname(d)
-	if err := b.exec(`CREATE DATABASE ?`, dbname); err != nil {
+	if _, err := b.conn.Exec("CREATE DATABASE " + dbname); err != nil {
 		return "", err
 	}
 
@@ -204,19 +208,4 @@ func connect(source string) (*sql.DB, error) {
 	}
 
 	return conn, nil
-}
-
-// Parses host and port out of connection url
-func parseHostAndPort(source string) (string, string, error) {
-	u, err := url.Parse(source)
-	if err != nil {
-		return "", "", err
-	}
-
-	h, p, err := net.SplitHostPort(u.Host)
-	if err != nil {
-		return u.Host, defaultPort, nil
-	}
-
-	return h, p, nil
 }
