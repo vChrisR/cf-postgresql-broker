@@ -85,7 +85,7 @@ func TestCreateAndDropUser(t *testing.T) {
 	}
 }
 
-func newPGP(t *testing.T) (*PGPuppeteer, error) {
+func newPGP(t *testing.T) (*db, error) {
 	source := os.Getenv("PG_SOURCE")
 
 	if source == "" {

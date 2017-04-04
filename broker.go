@@ -41,7 +41,7 @@ func NewServiceBroker(source, servicesJSON, GUID string) (brokerapi.ServiceBroke
 
 // serviceBroker implements brokerapi.ServiceBroker
 type serviceBroker struct {
-	pgp      *pgp.PGPuppeteer
+	pgp      *pgp.db
 	services []brokerapi.Service
 }
 
