@@ -63,7 +63,3 @@ $ cf create-service cf-postgresql-broker basic pgsql
 $ cf bind-service my-app pgsql
 $ cf restage my-app
 ```
-
-## Development
-
-1. Copy `.envrc.example` to `.envrc`, then load it by `$ source .envrc` if you don't have the [direnv](http://direnv.net) package installed.
