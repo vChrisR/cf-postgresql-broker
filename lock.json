@@ -12,7 +12,7 @@
         {
             "name": "github.com/Altoros/pg-puppeteer-go",
             "branch": "master",
-            "revision": "f509cd2d26329f599a217bca3c55f3ec816be248",
+            "revision": "14da0bbfd55350162aedbe0902af897476760f80",
             "packages": [
                 "."
             ]

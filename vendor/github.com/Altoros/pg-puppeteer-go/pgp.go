@@ -42,7 +42,7 @@ var ErrInvalidSource = errors.New("source must be an url, e.g postgres://user:pa
 
 // Creates new broker instance
 func New(source string) (*PGPuppeteer, error) {
-	if !strings.HasPrefix(source, "postgres://") {
+	if !strings.HasPrefix(source, "postgresql://") {
 		return nil, ErrInvalidSource
 	}
 
@@ -120,7 +120,7 @@ func (b *PGPuppeteer) CreateUser(d, u string) (*Credentials, error) {
 		Password: password,
 		Host:     b.host,
 		Port:     b.port,
-		Url:      fmt.Sprintf("postgres://%s:%s@%s:%s/%s", username, password, b.host, b.port, dbname),
+		Url:      fmt.Sprintf("postgresql://%s:%s@%s:%s/%s", username, password, b.host, b.port, dbname),
 	}, nil
 }
 

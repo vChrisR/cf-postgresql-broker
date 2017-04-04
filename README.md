@@ -25,7 +25,7 @@ Set the environment.
 ```
 $ AUTH_USER=admin
 $ AUTH_PASSWORD=admin
-$ PG_SOURCE=postgres://username:password@host:port/dbname
+$ PG_SOURCE=postgresql://username:password@host:port/dbname
 $ PG_SERVICES='[{
   "id": "service-postgresql-{GUID}",
   "name": "postgresql",
