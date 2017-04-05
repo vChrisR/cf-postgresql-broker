@@ -13,6 +13,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// PGP is a postgresql manipulation entity implementation
 type PGP struct {
 	conn   *sql.DB
 	host   string
@@ -20,6 +21,7 @@ type PGP struct {
 	prefix string
 }
 
+// Credentials contains all information that is needed to connect to created databases
 type Credentials struct {
 	DBName   string `json:"dbname"`
 	Username string `json:"username"`
@@ -32,7 +34,7 @@ type Credentials struct {
 // defaultPort is PostgreSQL default port
 const defaultPort = "5432"
 
-// Creates new broker instance
+// New creates a new PGP entity
 func New(source string) (*PGP, error) {
 	u, err := url.Parse(source)
 	if err != nil {
@@ -48,8 +50,12 @@ func New(source string) (*PGP, error) {
 		chunks = append(chunks, defaultPort)
 	}
 
-	conn, err := connect(source)
+	conn, err := sql.Open("postgres", source)
 	if err != nil {
+		return nil, err
+	}
+
+	if err = conn.Ping(); err != nil {
 		return nil, err
 	}
 
@@ -61,15 +67,14 @@ func New(source string) (*PGP, error) {
 	}, nil
 }
 
-// Creates a DB
+// CreateDB creates the named database
 func (b *PGP) CreateDB(ctx context.Context, d string) (string, error) {
 	dbname := b.dbname(d)
 	_, err := b.conn.ExecContext(ctx, "CREATE DATABASE "+de(dbname))
 	return dbname, err
 }
 
-// Terminates all active connections to a DB and drops it
-// If it fails to terminate them it writes errors messages to STDERR
+// DropDB deletes the named database
 func (b *PGP) DropDB(ctx context.Context, d string) error {
 	dbname := b.dbname(d)
 	if _, err := b.conn.ExecContext(ctx, "UPDATE pg_database SET datallowconn = $1 WHERE datname = $2", false, dbname); err != nil {
@@ -85,7 +90,7 @@ func (b *PGP) DropDB(ctx context.Context, d string) error {
 	return err
 }
 
-// Creates a DB user
+// CreateUser creates a user for the named database
 func (b *PGP) CreateUser(ctx context.Context, d, u string) (*Credentials, error) {
 	dbname := b.dbname(d)
 	if !b.databaseExists(ctx, dbname) {
@@ -118,7 +123,7 @@ func (b *PGP) CreateUser(ctx context.Context, d, u string) (*Credentials, error)
 	}, nil
 }
 
-// Drops a DB user
+// DropUser removes the named user
 func (b *PGP) DropUser(ctx context.Context, d, u string) error {
 	dbname := b.dbname(d)
 	username := b.username(u)
@@ -129,50 +134,41 @@ func (b *PGP) DropUser(ctx context.Context, d, u string) error {
 	return err
 }
 
-// Returns db name based on its instance id
+// dbname prefixes the named database name
 func (b *PGP) dbname(d string) string {
 	return b.prefix + d
 }
 
-// Returns db user name based on its instance and binding ids
+// username prefixes the named username
 func (b *PGP) username(u string) string {
 	return b.prefix + u
 }
 
-// Generates random password
+// password generates a random password
 func (b *PGP) password(size int) (string, error) {
 	buf := make([]byte, size)
 	if _, err := rand.Read(buf); err != nil {
 		return "", err
 	}
-
 	return base64.URLEncoding.EncodeToString(buf), nil
 }
 
-// Checks whether DB exists or not
+// userExists checks whether the named database exists
 func (b *PGP) databaseExists(ctx context.Context, dbname string) bool {
 	return b.exists(ctx, "pg_database", "datname", dbname)
 }
 
-// Checks whether user exists or not
+// userExists checks whether the named user exists
 func (b *PGP) userExists(ctx context.Context, username string) bool {
 	return b.exists(ctx, "pg_user", "usename", username)
 }
 
-// nodoc
+// exists checks whether the named column is exists in the provided table name
+// and it equals to the specified value
 func (b *PGP) exists(ctx context.Context, table, column, value string) bool {
 	var num string
-	b.conn.QueryRowContext(ctx, "SELECT 1 FROM "+table+" WHERE "+column+" = $1", value).Scan(&num)
+	b.conn.QueryRowContext(ctx, "SELECT 1 FROM "+de(table)+" WHERE "+de(column)+" = $1 LIMIT 1", value).Scan(&num)
 	return num != ""
-}
-
-// connect opens a db connection and pings it
-func connect(source string) (*sql.DB, error) {
-	conn, err := sql.Open("postgres", source)
-	if err != nil {
-		return nil, err
-	}
-	return conn, conn.Ping()
 }
 
 // de double-quotes the named string safely escaping it
