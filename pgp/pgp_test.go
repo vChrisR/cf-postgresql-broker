@@ -1,6 +1,7 @@
 package pgp
 
 import (
+	"context"
 	"os"
 	"testing"
 )
@@ -19,13 +20,16 @@ func TestNew(t *testing.T) {
 }
 
 func TestCreateAndDropDB(t *testing.T) {
-	pgp, _ := newPGP(t)
+	pgp, err := newPGP(t)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	dbname := pgp.dbname(testDB)
 
-	defer pgp.exec(`DROP DATABASE ?`, dbname)
+	defer pgp.conn.Exec(`DROP DATABASE $1`, dbname)
 
-	dbname, err := pgp.CreateDB(testDB)
-
+	dbname, err = pgp.CreateDB(context.Background(), testDB)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -34,36 +38,32 @@ func TestCreateAndDropDB(t *testing.T) {
 		t.Fatal("dbname is empty")
 	}
 
-	if !pgp.databaseExists(dbname) {
+	if !pgp.databaseExists(context.Background(), dbname) {
 		t.Fatal("database doesn't exist")
 	}
 
-	if err := pgp.DropDB(testDB); err != nil {
+	if err := pgp.DropDB(context.Background(), testDB); err != nil {
 		t.Fatal(err)
 	}
 
-	if pgp.databaseExists(dbname) {
+	if pgp.databaseExists(context.Background(), dbname) {
 		t.Fatal("database still exists")
 	}
 }
 
 func TestCreateAndDropUser(t *testing.T) {
-	pgp, _ := newPGP(t)
-	dbname := pgp.dbname(testDB)
-	username := pgp.username(testUser)
-
-	defer func() {
-		pgp.exec(`REVOKE ALL PRIVILEGES ON DATABASE ? FROM ?`, dbname, username)
-		pgp.exec(`DROP USER ?`, username)
-		pgp.exec(`DROP DATABASE ?`, dbname)
-	}()
-
-	if _, err := pgp.CreateDB(testDB); err != nil {
+	pgp, err := newPGP(t)
+	if err != nil {
 		t.Fatal(err)
 	}
 
-	creds, err := pgp.CreateUser(testDB, testUser)
+	username := pgp.username(testUser)
+	if _, err := pgp.CreateDB(context.Background(), testDB); err != nil {
+		t.Fatal(err)
+	}
+	defer pgp.DropDB(context.Background(), testDB)
 
+	creds, err := pgp.CreateUser(context.Background(), testDB, testUser)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -72,24 +72,23 @@ func TestCreateAndDropUser(t *testing.T) {
 		t.Fatal("credentials are blank")
 	}
 
-	if !pgp.userExists(username) {
+	if !pgp.userExists(context.Background(), username) {
 		t.Fatal("user hasn't been created")
 	}
 
-	if err := pgp.DropUser(testDB, testUser); err != nil {
+	if err := pgp.DropUser(context.Background(), testDB, testUser); err != nil {
 		t.Fatal(err)
 	}
 
-	if pgp.userExists(username) {
+	if pgp.userExists(context.Background(), username) {
 		t.Fatal("user still exists")
 	}
 }
 
-func newPGP(t *testing.T) (*db, error) {
+func newPGP(t *testing.T) (*PGP, error) {
 	source := os.Getenv("PG_SOURCE")
-
 	if source == "" {
-		t.Fatal("Environment variable PG_SOURCE is not provided or empty")
+		t.Fatal("$PG_SOURCE is required")
 	}
 
 	return New(os.Getenv("PG_SOURCE"))

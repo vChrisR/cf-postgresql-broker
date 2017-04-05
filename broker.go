@@ -41,7 +41,7 @@ func NewServiceBroker(source, servicesJSON, GUID string) (brokerapi.ServiceBroke
 
 // serviceBroker implements brokerapi.ServiceBroker
 type serviceBroker struct {
-	pgp      *pgp.db
+	pgp      *pgp.PGP
 	services []brokerapi.Service
 }
 
@@ -52,7 +52,7 @@ func (sb *serviceBroker) Services(ctx context.Context) []brokerapi.Service {
 
 // Provision implements brokerapi.ServiceBroker
 func (sb *serviceBroker) Provision(ctx context.Context, instanceID string, _ brokerapi.ProvisionDetails, _ bool) (brokerapi.ProvisionedServiceSpec, error) {
-	dbname, err := sb.pgp.CreateDB(instanceID)
+	dbname, err := sb.pgp.CreateDB(ctx, instanceID)
 	if err != nil {
 		return brokerapi.ProvisionedServiceSpec{}, err
 	}
@@ -65,12 +65,12 @@ func (sb *serviceBroker) Provision(ctx context.Context, instanceID string, _ bro
 
 // Deprovision implements brokerapi.ServiceBroker
 func (sb *serviceBroker) Deprovision(ctx context.Context, instanceID string, _ brokerapi.DeprovisionDetails, _ bool) (brokerapi.DeprovisionServiceSpec, error) {
-	return brokerapi.DeprovisionServiceSpec{}, sb.pgp.DropDB(instanceID)
+	return brokerapi.DeprovisionServiceSpec{}, sb.pgp.DropDB(ctx, instanceID)
 }
 
 // Bind implements brokerapi.ServiceBroker
 func (sb *serviceBroker) Bind(ctx context.Context, instanceID, bindingID string, _ brokerapi.BindDetails) (brokerapi.Binding, error) {
-	creds, err := sb.pgp.CreateUser(instanceID, bindingID)
+	creds, err := sb.pgp.CreateUser(ctx, instanceID, bindingID)
 	if err != nil {
 		return brokerapi.Binding{}, err
 	}
@@ -82,7 +82,7 @@ func (sb *serviceBroker) Bind(ctx context.Context, instanceID, bindingID string,
 
 // Unbind implements brokerapi.ServiceBroker
 func (sb *serviceBroker) Unbind(ctx context.Context, instanceID, bindingID string, _ brokerapi.UnbindDetails) error {
-	return sb.pgp.DropUser(instanceID, bindingID)
+	return sb.pgp.DropUser(ctx, instanceID, bindingID)
 }
 
 // LastOperation implements brokerapi.ServiceBroker

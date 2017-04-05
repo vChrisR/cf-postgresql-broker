@@ -2,6 +2,6 @@
 applications:
 - name: cf-postgresql-broker
   command: ./cf-postgresql-broker
-  memory: 1024M
-  disk: 512M
+  memory: 32M
+  disk: 32M
   buildpack: binary_buildpack
