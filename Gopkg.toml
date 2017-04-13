@@ -1,0 +1,12 @@
+
+[[dependencies]]
+  branch = "master"
+  name = "code.cloudfoundry.org/lager"
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/lib/pq"
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/pivotal-cf/brokerapi"
