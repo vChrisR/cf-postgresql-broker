@@ -8,7 +8,6 @@ Clone the git repository and compile the package:
 ```
 $ git clone https://github.com/Altoros/cf-postgresql-broker.git
 $ cd cf-postgresql-broker
-$ make build
 ```
 
 Push the compiled binary to the Cloud Foundry:
