@@ -15,9 +15,8 @@ import (
 
 // PGP is a postgresql manipulation entity implementation
 type PGP struct {
+	source url.URL
 	conn   *sql.DB
-	host   string
-	port   string
 	prefix string
 }
 
@@ -45,9 +44,8 @@ func New(source string) (*PGP, error) {
 		return nil, errors.New("malformed url")
 	}
 
-	chunks := strings.SplitN(u.Host, ":", 2)
-	if len(chunks) < 2 {
-		chunks = append(chunks, defaultPort)
+	if u.Port() == "" {
+		u.Host = u.Host + ":" + defaultPort
 	}
 
 	conn, err := sql.Open("postgres", source)
@@ -60,9 +58,8 @@ func New(source string) (*PGP, error) {
 	}
 
 	return &PGP{
+		source: *u,
 		conn:   conn,
-		host:   chunks[0],
-		port:   chunks[1],
 		prefix: "sb_",
 	}, nil
 }
@@ -113,13 +110,17 @@ func (b *PGP) CreateUser(ctx context.Context, d, u string) (*Credentials, error)
 		return nil, err
 	}
 
+	source := b.source
+	source.User = url.UserPassword(username, password)
+	source.Path = dbname
+
 	return &Credentials{
 		DBName:   dbname,
 		Username: username,
 		Password: password,
-		Host:     b.host,
-		Port:     b.port,
-		Url:      fmt.Sprintf("postgresql://%s:%s@%s:%s/%s", username, password, b.host, b.port, dbname),
+		Host:     source.Hostname(),
+		Port:     source.Port(),
+		Url:      source.String(),
 	}, nil
 }
 
@@ -127,10 +128,24 @@ func (b *PGP) CreateUser(ctx context.Context, d, u string) (*Credentials, error)
 func (b *PGP) DropUser(ctx context.Context, d, u string) error {
 	dbname := b.dbname(d)
 	username := b.username(u)
-	if _, err := b.conn.Exec("REVOKE ALL PRIVILEGES ON DATABASE " + de(dbname) + " FROM " + de(username)); err != nil {
+
+	if dbname != strings.TrimLeft(b.source.Path, "/") {
+		// We need to execute this in the context of the correct database
+		source := b.source
+		source.Path = dbname
+		other, err := New(source.String())
+		if err != nil {
+			return err
+		}
+		return other.DropUser(ctx, d, u)
+	}
+	if _, err := b.conn.ExecContext(ctx, "REASSIGN OWNED BY "+de(username)+" TO "+de(b.source.User.Username())); err != nil {
 		return err
 	}
-	_, err := b.conn.Exec("DROP USER " + de(username))
+	if _, err := b.conn.ExecContext(ctx, "REVOKE ALL PRIVILEGES ON DATABASE "+de(dbname)+" FROM "+de(username)); err != nil {
+		return err
+	}
+	_, err := b.conn.ExecContext(ctx, "DROP USER "+de(username))
 	return err
 }
 

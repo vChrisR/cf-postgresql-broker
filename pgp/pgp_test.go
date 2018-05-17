@@ -2,8 +2,11 @@ package pgp
 
 import (
 	"context"
+	"database/sql"
 	"os"
 	"testing"
+
+	_ "github.com/lib/pq"
 )
 
 const testDB = "test_foo"
@@ -75,6 +78,22 @@ func TestCreateAndDropUser(t *testing.T) {
 	if !pgp.userExists(context.Background(), username) {
 		t.Fatal("user hasn't been created")
 	}
+
+	// Create a table owned by that user, to ensure we can drop users that own
+	// tables.  Do this in a function to ensure we close the connection early.
+	func() {
+		conn, err := sql.Open("postgres", creds.Url)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer conn.Close()
+
+		_, err = conn.Exec("CREATE TABLE IF NOT EXISTS " + testUser + "_table()")
+		if err != nil {
+			t.Fatalf("Failed to create table: %s", err)
+		}
+	}()
+	defer pgp.conn.Exec("DROP TABLE IF EXISTS foo")
 
 	if err := pgp.DropUser(context.Background(), testDB, testUser); err != nil {
 		t.Fatal(err)
