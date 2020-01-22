@@ -74,15 +74,19 @@ func (b *PGP) CreateDB(ctx context.Context, d string) (string, error) {
 // DropDB deletes the named database
 func (b *PGP) DropDB(ctx context.Context, d string) error {
 	dbname := b.dbname(d)
+
+	fmt.Println("Dropdb: start datallowCon = false")
 	if _, err := b.conn.ExecContext(ctx, "UPDATE pg_database SET datallowconn = $1 WHERE datname = $2", false, dbname); err != nil {
 		return err
 	}
 
+	fmt.Println("Dropdb: start pg_terminate_backed")
 	if _, err := b.conn.ExecContext(ctx, "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = $1", dbname); err != nil {
 		return err
 	}
 
 	// TODO: drop users
+	fmt.Println("Dropdb: start drop database")
 	_, err := b.conn.Exec("DROP DATABASE " + de(dbname))
 	return err
 }
