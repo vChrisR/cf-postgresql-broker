@@ -41,7 +41,7 @@ func TestCreateAndDropDB(t *testing.T) {
 		t.Fatal("dbname is empty")
 	}
 
-	if !pgp.databaseExists(context.Background(), dbname) {
+	if !pgp.DatabaseExists(context.Background(), dbname) {
 		t.Fatal("database doesn't exist")
 	}
 
@@ -49,7 +49,7 @@ func TestCreateAndDropDB(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if pgp.databaseExists(context.Background(), dbname) {
+	if pgp.DatabaseExists(context.Background(), dbname) {
 		t.Fatal("database still exists")
 	}
 }

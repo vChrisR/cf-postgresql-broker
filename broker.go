@@ -70,7 +70,8 @@ func (sb *serviceBroker) GetInstance(ctx context.Context, instanceID string) (br
 
 // Deprovision implements brokerapi.ServiceBroker
 func (sb *serviceBroker) Deprovision(ctx context.Context, instanceID string, _ brokerapi.DeprovisionDetails, _ bool) (brokerapi.DeprovisionServiceSpec, error) {
-	return brokerapi.DeprovisionServiceSpec{}, sb.pgp.DropDB(ctx, instanceID)
+	go sb.pgp.DropDB(ctx, instanceID)
+	return brokerapi.DeprovisionServiceSpec{IsAsync: true, OperationData: "DROP DB in progress"}, nil
 }
 
 // Bind implements brokerapi.ServiceBroker
@@ -96,7 +97,13 @@ func (sb *serviceBroker) Unbind(ctx context.Context, instanceID, bindingID strin
 
 // LastOperation implements brokerapi.ServiceBroker
 func (sb *serviceBroker) LastOperation(ctx context.Context, instanceID string, details brokerapi.PollDetails) (brokerapi.LastOperation, error) {
-	return brokerapi.LastOperation{}, errors.New("async operations are not supported")
+	var reply = brokerapi.LastOperation{State: brokerapi.InProgress, Description: "Drop DB in progress"}
+	if exists := sb.pgp.DatabaseExists(ctx, instanceID); !exists {
+		reply.State = brokerapi.Succeeded
+		reply.Description = "DROP DB Succesful"
+	}
+
+	return reply, nil
 }
 
 func (sb *serviceBroker) LastBindingOperation(ctx context.Context, instanceID, bindingID string, details brokerapi.PollDetails) (brokerapi.LastOperation, error) {

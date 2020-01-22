@@ -94,7 +94,7 @@ func (b *PGP) DropDB(ctx context.Context, d string) error {
 // CreateUser creates a user for the named database
 func (b *PGP) CreateUser(ctx context.Context, d, u string) (*Credentials, error) {
 	dbname := b.dbname(d)
-	if !b.databaseExists(ctx, dbname) {
+	if !b.DatabaseExists(ctx, dbname) {
 		return nil, fmt.Errorf("database %q doesn't exist", dbname)
 	}
 
@@ -173,7 +173,7 @@ func (b *PGP) password(size int) (string, error) {
 }
 
 // userExists checks whether the named database exists
-func (b *PGP) databaseExists(ctx context.Context, dbname string) bool {
+func (b *PGP) DatabaseExists(ctx context.Context, dbname string) bool {
 	return b.exists(ctx, "pg_database", "datname", dbname)
 }
 
