@@ -1,11 +1,13 @@
 language: go
 
 go:
-  - 1.7.3
+  - 1.11.x
+  - 1.12.x
+  - 1.13.x
 
-install:
-  - go get -v github.com/tools/godep
-  - godep restore
-  - go get -v github.com/onsi/ginkgo/ginkgo
+env:
+  - GO111MODULE=on
 
-script: ginkgo -r
+script:
+- go run honnef.co/go/tools/cmd/staticcheck ./...
+- go run github.com/onsi/ginkgo/ginkgo -r

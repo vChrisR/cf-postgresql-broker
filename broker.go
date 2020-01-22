@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 
-	"github.com/Altoros/cf-postgresql-broker/pgp"
 	"github.com/pivotal-cf/brokerapi"
+	"github.com/vchrisr/cf-postgresql-broker/pgp"
 )
 
 // NewServiceBroker creates a new brokerapi.ServiceBroker entity
@@ -46,8 +47,8 @@ type serviceBroker struct {
 }
 
 // Services implements brokerapi.ServiceBroker
-func (sb *serviceBroker) Services(ctx context.Context) []brokerapi.Service {
-	return sb.services
+func (sb *serviceBroker) Services(ctx context.Context) ([]brokerapi.Service, error) {
+	return sb.services, nil
 }
 
 // Provision implements brokerapi.ServiceBroker
@@ -63,13 +64,17 @@ func (sb *serviceBroker) Provision(ctx context.Context, instanceID string, _ bro
 	}, nil
 }
 
+func (sb *serviceBroker) GetInstance(ctx context.Context, instanceID string) (brokerapi.GetInstanceDetailsSpec, error) {
+	return brokerapi.GetInstanceDetailsSpec{}, fmt.Errorf("Function not implemented")
+}
+
 // Deprovision implements brokerapi.ServiceBroker
 func (sb *serviceBroker) Deprovision(ctx context.Context, instanceID string, _ brokerapi.DeprovisionDetails, _ bool) (brokerapi.DeprovisionServiceSpec, error) {
 	return brokerapi.DeprovisionServiceSpec{}, sb.pgp.DropDB(ctx, instanceID)
 }
 
 // Bind implements brokerapi.ServiceBroker
-func (sb *serviceBroker) Bind(ctx context.Context, instanceID, bindingID string, _ brokerapi.BindDetails) (brokerapi.Binding, error) {
+func (sb *serviceBroker) Bind(ctx context.Context, instanceID, bindingID string, _ brokerapi.BindDetails, asyncAllowed bool) (brokerapi.Binding, error) {
 	creds, err := sb.pgp.CreateUser(ctx, instanceID, bindingID)
 	if err != nil {
 		return brokerapi.Binding{}, err
@@ -80,14 +85,22 @@ func (sb *serviceBroker) Bind(ctx context.Context, instanceID, bindingID string,
 	}, nil
 }
 
+func (sb *serviceBroker) GetBinding(ctx context.Context, instanceID, bindingID string) (brokerapi.GetBindingSpec, error) {
+	return brokerapi.GetBindingSpec{}, fmt.Errorf("Function not implemented")
+}
+
 // Unbind implements brokerapi.ServiceBroker
-func (sb *serviceBroker) Unbind(ctx context.Context, instanceID, bindingID string, _ brokerapi.UnbindDetails) error {
-	return sb.pgp.DropUser(ctx, instanceID, bindingID)
+func (sb *serviceBroker) Unbind(ctx context.Context, instanceID, bindingID string, _ brokerapi.UnbindDetails, asyncAllowed bool) (brokerapi.UnbindSpec, error) {
+	return brokerapi.UnbindSpec{IsAsync: false, OperationData: ""}, sb.pgp.DropUser(ctx, instanceID, bindingID)
 }
 
 // LastOperation implements brokerapi.ServiceBroker
-func (sb *serviceBroker) LastOperation(ctx context.Context, instanceID, operationData string) (brokerapi.LastOperation, error) {
-	return brokerapi.LastOperation{}, errors.New("async operaions are not supported")
+func (sb *serviceBroker) LastOperation(ctx context.Context, instanceID string, details brokerapi.PollDetails) (brokerapi.LastOperation, error) {
+	return brokerapi.LastOperation{}, errors.New("async operations are not supported")
+}
+
+func (sb *serviceBroker) LastBindingOperation(ctx context.Context, instanceID, bindingID string, details brokerapi.PollDetails) (brokerapi.LastOperation, error) {
+	return brokerapi.LastOperation{}, fmt.Errorf("function not implemented")
 }
 
 // Update implements brokerapi.ServiceBroker
